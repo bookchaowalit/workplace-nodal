@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { OfficeError, OfficeService } from "./service";
 import { officeDatabase } from "./database";
+import { reportUnexpected } from "../observability/report";
 
 export const COOKIE = "nodal_session";
 export async function officeContext() {
@@ -48,5 +49,6 @@ export function reply(body: object, status = 200) {
 export function failure(error: unknown) {
   if (error instanceof OfficeError) return reply({ error: error.message }, error.status);
   if (error instanceof Error && error.name === "ZodError") return reply({ error: "invalid_request" }, 400);
+  reportUnexpected(error);
   return reply({ error: "office_unavailable" }, 503);
 }
