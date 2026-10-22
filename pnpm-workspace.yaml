@@ -9,3 +9,5 @@ overrides:
   # drizzle-kit -> @esbuild-kit/core-utils pins esbuild ~0.18.20 (GHSA-67mh-4wv8-2f99, dev-server CORS).
   # core-utils only calls esbuild's transform API, which 0.25 keeps; drizzle-kit itself already uses 0.25.
   "@esbuild-kit/core-utils>esbuild": ^0.25.12
+  # vitest -> vite 7.3.6 has GHSA-587h-7wmj-h5pm and four dev-server advisories fixed in 7.3.7 (OSV gate).
+  "vite@>=7.0.0 <7.3.7": 7.3.7
