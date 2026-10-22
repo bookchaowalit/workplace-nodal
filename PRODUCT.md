@@ -56,3 +56,11 @@ workflows. This local fixture does not prove that promise.
 - a new calendar, chat, or project-management system;
 - production billing, enterprise SSO, or transcript retention claims.
 
+
+## Operations today
+
+- Runs only where someone starts it: loopback (`pnpm office:dev`), same-LAN
+  (`pnpm office:lan`) or a self-hosted `pnpm start`. There is no hosted
+  deployment and no live URL.
+- Server-side error reporting to Sentry is wired but inert unless the operator
+  sets `SENTRY_DSN`; see README "Error reporting" for what is and is not sent.

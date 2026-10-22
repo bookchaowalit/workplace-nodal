@@ -118,6 +118,8 @@ environment values:
 - LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET: private media configuration.
 - NODAL_OWNER_USERNAME, NODAL_OWNER_NAME, NODAL_OWNER_PASSWORD: initial owner
   bootstrap only; remove these values after setup.
+- SENTRY_DSN (optional): server-side error reporting. Unset means nothing is
+  sent, which is the default for loopback and LAN pilots. See "Error reporting".
 
 ```bash
 pnpm db:migrate
@@ -133,6 +135,18 @@ short-lived and scoped to the authenticated tenant/member/room.
 
 Useful references: [LiveKit local hosting](https://docs.livekit.io/transport/self-hosting/local/)
 and [tokens and grants](https://docs.livekit.io/frontends/reference/tokens-grants/).
+
+## Error reporting
+
+API routes turn unexpected failures (database down, migration drift) into a
+generic `office_unavailable` / `workspace_unavailable` 503 so nothing internal
+reaches the browser. Those errors, and any uncaught route error, are reported to
+Sentry by the Node.js server only (`instrumentation.ts`, `sentry.server.config.ts`,
+`src/observability/`), and only when `SENTRY_DSN` is set on the host. There is no
+browser SDK, tracing, replay or breadcrumbs. `beforeSend` is an allowlist that
+keeps the exception type, message (with Drizzle `params:` removed, max 300
+characters) and code location; request URLs, headers, cookies, bodies, user,
+host name and frame locals are dropped. Expected 4xx errors are not reported.
 
 ## Engineering persistence
 
