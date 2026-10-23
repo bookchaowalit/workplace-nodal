@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const captureException = vi.hoisted(() => vi.fn());
 vi.mock("@sentry/nextjs", () => ({ captureException }));
 
-import { scrubEvent, sentryOptions } from "../../src/observability/sentry";
+import { scrubEvent, sentryOptions, type ReportableEvent } from "../../src/observability/sentry";
 import { failure } from "../../src/office/http";
 import { OfficeError } from "../../src/office/service";
 
@@ -43,7 +43,7 @@ describe("scrubEvent (allowlist)", () => {
     exception: {
       values: [{
         type: "Error",
-        value: "database unavailable",
+        value: "office_not_configured",
         mechanism: { type: "generic", handled: true, data: { token: "x" } },
         stacktrace: { frames: [{ filename: "src/office/service.ts", function: "say", lineno: 10, vars: { password: "p" }, context_line: "secret" }] },
       }],
@@ -57,7 +57,7 @@ describe("scrubEvent (allowlist)", () => {
     expect(scrubbed.exception).toEqual({
       values: [{
         type: "Error",
-        value: "database unavailable",
+        value: "office_not_configured",
         mechanism: { type: "generic", handled: true },
         stacktrace: { frames: [{ filename: "src/office/service.ts", function: "say", lineno: 10,
           module: undefined, colno: undefined, in_app: undefined }] },
@@ -77,9 +77,51 @@ describe("scrubEvent (allowlist)", () => {
     expect(scrubbed.exception?.values?.[0]?.value).toBe('Failed query: select "id" from "office_members" where "username" = $1');
   });
 
-  it("truncates long exception messages", () => {
-    const scrubbed = scrubEvent({ exception: { values: [{ type: "Error", value: "x".repeat(1000) }] } });
+  it("truncates long query messages", () => {
+    const scrubbed = scrubEvent({ exception: { values: [{ type: "Error", value: `Failed query: select ${"x".repeat(1000)}` }] } });
     expect(scrubbed.exception?.values?.[0]?.value).toHaveLength(300);
+  });
+
+  const valueOf = (event: ReportableEvent, index = 0) => event.exception?.values?.[index]?.value;
+
+  it("redacts free-text database messages, which quote user values", () => {
+    for (const value of [
+      'duplicate key value violates unique constraint "office_members_username_key"',
+      'invalid input syntax for type uuid: "alice"',
+      "connect ECONNREFUSED 10.0.0.5:5432",
+      "database unavailable",
+    ]) expect(valueOf(scrubEvent({ exception: { values: [{ type: "DatabaseError", value }] } }))).toBe("[redacted]");
+  });
+
+  it("keeps the app's own static error codes", () => {
+    for (const value of ["office_not_configured", "workspace_not_initialized", "tenant_mismatch", "network_timeout"])
+      expect(valueOf(scrubEvent({ exception: { values: [{ type: "Error", value }] } }))).toBe(value);
+  });
+
+  it("strips quoted literals from Drizzle query text", () => {
+    const value = `Failed query: select "id" from "office_members" where "username" = 'alice' and "note" = 'it''s me'\nparams: alice`;
+    expect(valueOf(scrubEvent({ exception: { values: [{ type: "Error", value }] } })))
+      .toBe(`Failed query: select "id" from "office_members" where "username" = '?' and "note" = '?'`);
+  });
+
+  it("drops the values of linked cause errors but keeps their type", () => {
+    const scrubbed = scrubEvent({ exception: { values: [
+      { type: "DatabaseError", value: "office_not_configured", mechanism: { type: "chained", source: "cause", handled: true } as never },
+      { type: "Error", value: "Failed query: select 1\nparams: " },
+    ] } });
+    expect(scrubbed.exception?.values?.[0]).toMatchObject({ type: "DatabaseError" });
+    expect(valueOf(scrubbed, 0)).toBeUndefined();
+    expect(valueOf(scrubbed, 1)).toBe("Failed query: select 1");
+  });
+
+  it("adds the Postgres SQLSTATE code from the original error chain, and nothing else from it", () => {
+    const cause = Object.assign(new Error('duplicate key value violates unique constraint "x" Key (username)=(alice)'), { code: "23505", detail: "Key (username)=(alice)" });
+    const error = new Error("Failed query: insert ...", { cause });
+    const scrubbed = scrubEvent({ exception: { values: [{ type: "Error", value: "Failed query: insert" }] } }, { originalException: error });
+    expect(scrubbed.tags).toEqual({ pg_code: "23505" });
+    expect(JSON.stringify(scrubbed)).not.toContain("alice");
+    const notPg = scrubEvent({ exception: { values: [] } }, { originalException: Object.assign(new Error("x"), { code: "alice" }) });
+    expect(notPg.tags).toBeUndefined();
   });
 });
 
