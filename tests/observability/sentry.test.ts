@@ -117,10 +117,10 @@ describe("scrubEvent (allowlist)", () => {
   it("adds the Postgres SQLSTATE code from the original error chain, and nothing else from it", () => {
     const cause = Object.assign(new Error('duplicate key value violates unique constraint "x" Key (username)=(alice)'), { code: "23505", detail: "Key (username)=(alice)" });
     const error = new Error("Failed query: insert ...", { cause });
-    const scrubbed = scrubEvent({ exception: { values: [{ type: "Error", value: "Failed query: insert" }] } }, { originalException: error });
+    const scrubbed = scrubEvent<ReportableEvent>({ exception: { values: [{ type: "Error", value: "Failed query: insert" }] } }, { originalException: error });
     expect(scrubbed.tags).toEqual({ pg_code: "23505" });
     expect(JSON.stringify(scrubbed)).not.toContain("alice");
-    const notPg = scrubEvent({ exception: { values: [] } }, { originalException: Object.assign(new Error("x"), { code: "alice" }) });
+    const notPg = scrubEvent<ReportableEvent>({ exception: { values: [] } }, { originalException: Object.assign(new Error("x"), { code: "alice" }) });
     expect(notPg.tags).toBeUndefined();
   });
 });
