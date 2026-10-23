@@ -144,9 +144,13 @@ reaches the browser. Those errors, and any uncaught route error, are reported to
 Sentry by the Node.js server only (`instrumentation.ts`, `sentry.server.config.ts`,
 `src/observability/`), and only when `SENTRY_DSN` is set on the host. There is no
 browser SDK, tracing, replay or breadcrumbs. `beforeSend` is an allowlist that
-keeps the exception type, message (with Drizzle `params:` removed, max 300
-characters) and code location; request URLs, headers, cookies, bodies, user,
-host name and frame locals are dropped. Expected 4xx errors are not reported.
+keeps the exception type and code location. Messages pass only if they are one of
+the app's static error codes, or Drizzle `Failed query:` text with `params:` removed
+and quoted literals replaced by `'?'` (max 300 characters); any other message
+(Postgres messages quote user values) is sent as `[redacted]`, linked cause errors
+keep their type only, and the Postgres SQLSTATE of the error chain is sent as the
+`pg_code` tag. Request URLs, headers, cookies, bodies, user, host name and frame
+locals are dropped. Expected 4xx errors are not reported.
 
 ## Engineering persistence
 
