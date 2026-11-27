@@ -9,10 +9,12 @@ Last reviewed: 2026-11-28 · commit `48cf9a2`
 ```mermaid
 flowchart TD
   OP["operator: pnpm office:dev / office:lan / office:media(:lan:https) or self-hosted pnpm start"] --> APP["Next.js app :3400 (single Node process)"]
+  APP -->|"no DATABASE_URL, no NODAL_LOCAL_PILOT: fixture mode"| FXR[("fixture repository in memory (no office, no login)")]
   APP -->|"no DATABASE_URL + NODAL_LOCAL_PILOT=1"| PGL[("PGlite .nodal/office, Drizzle migrate at start")]
   APP -->|"DATABASE_URL set"| PG[("Postgres DATABASE_URL, app does not migrate")]
-  MIG["before start: pnpm db:migrate (DATABASE_URL_UNPOOLED) + db:seed"] --> PG
-  BOOT["pnpm office:bootstrap (NODAL_OWNER_*, empty membership)"] --> PG
+  MIG["1. pnpm db:migrate (DATABASE_URL_UNPOOLED)"] --> BOOT["2. pnpm office:bootstrap (NODAL_OWNER_*, empty membership; seeds the workspace)"]
+  BOOT --> PG
+  SEED["pnpm db:seed: workspace fixture data only, not a start step"] -.-> PG
   PGL -.-> DB["active store: office + workspace tables"]
   PG -.-> DB
   U["browser /office"] -->|"POST login"| LOGIN["check username + password"]
@@ -20,26 +22,32 @@ flowchart TD
   U -->|"POST register"| AUTH{"browser first-owner bootstrap? NODAL_LOCAL_PILOT=1 + NODAL_BOOTSTRAP_ALLOWED=1 + loopback origin/host + no members"}
   AUTH -->|"yes"| OWNER["owner account"]
   AUTH -->|"no: needs invitation (24 h, one use)"| MEMBER["member account"]
-  OWNER -->|"POST invite"| MEMBER
+  OWNER -->|"POST invite"| CODE["invitation code (24 h, one use)"]
+  CODE -.->|"recipient uses it in POST register"| AUTH
   OWNER --> SESS
   MEMBER --> SESS
-  SESS -->|"every 2 s"| PRES["POST presence in a room (expires 30 s) + GET state"]
+  SESS --> STATE["GET state: rooms, saved location, people, last 100 team messages (any room, no presence needed)"]
+  SESS -->|"every 2 s"| PRES["POST presence in a room (expires 30 s)"]
   PRES -->|"fresh presence in target room, else 409 join_room_first"| MSG["POST message (client request id, idempotent)"]
-  PRES -->|"same room check + LIVEKIT_* set"| MEDIA["POST media: short-lived LiveKit token per room"]
+  JOIN["user clicks join call (secure context only)"] --> MEDIA["POST media: short-lived LiveKit token per room"]
+  PRES -.->|"API checks same room + LIVEKIT_* set"| MEDIA
   PRES --> DB
   MSG --> DB
   FIX["GitHub / Linear adapters: local fixture JSON only"] -->|"pnpm db:import-fixtures (DATABASE_URL only)"| PG
   SESS --> ENGP["/engineering page: server reads repository.room()"]
   SESS --> WAPI["GET /api/workspace: repository.room() as JSON"]
-  DB --> ENGP
-  DB --> WAPI
+  DB -->|"database mode: session required (401 without)"| ENGP
+  DB -->|"database mode: session required (401 without)"| WAPI
   ENGP --> PROJ["standard / spatial / graph projections"]
-  PROJ -->|"owner only"| APPR["POST /api/decisions: proposed → approved_for_sync + audit event"]
+  FXR -->|"no session needed"| ENGP
+  FXR -->|"no session needed"| WAPI
+  PROJ -->|"database mode: owner only"| APPR["POST /api/decisions: proposed → approved_for_sync + audit event"]
+  PROJ -->|"fixture mode: same-origin request, simulated approver actor-book"| SIM["simulated approval (simulation true, persistence ephemeral, not kept across requests)"]
   APPR -.->|"externalWrite disabled"| SYNC["synced (not executable)"]
   APP -->|"SENTRY_DSN set"| SENTRY["Sentry, server only, allowlist beforeSend"]
 ```
 
-Sources: `app/api/office/[action]/route.ts`, `app/api/workspace/route.ts`, `app/api/decisions/route.ts`, `src/office/service.ts`, `src/office/http.ts`, `src/office/database.ts`, `app/engineering/page.tsx`, `scripts/database.ts`, `scripts/office-bootstrap.ts`, `src/adapters/sources.ts`, `src/domain/commands.ts`, `src/server/approval.ts`, `src/persistence/schema.ts`, `scripts/office-dev.ts`, `instrumentation.ts`, `README.md`, `PRODUCT.md` §Operations today
+Sources: `app/api/office/[action]/route.ts`, `app/api/workspace/route.ts`, `src/office/engineering.ts` (`engineeringContext`: fixture mode needs no session), `src/server/approval.ts` (fixture approval is a simulation), `src/components/office-shell.tsx` (join call), `app/api/decisions/route.ts`, `src/office/service.ts`, `src/office/http.ts`, `src/office/database.ts`, `app/engineering/page.tsx`, `scripts/database.ts`, `scripts/office-bootstrap.ts`, `src/adapters/sources.ts`, `src/domain/commands.ts`, `src/server/approval.ts`, `src/persistence/schema.ts`, `scripts/office-dev.ts`, `instrumentation.ts`, `README.md`, `PRODUCT.md` §Operations today
 
 ข้อเท็จจริงจากโค้ดและ README:
 
