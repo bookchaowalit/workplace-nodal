@@ -13,13 +13,15 @@ flowchart TD
   APP -->|"no DATABASE_URL + NODAL_LOCAL_PILOT=1"| PGL[("PGlite .nodal/office, Drizzle migrate at start")]
   APP -->|"DATABASE_URL set"| PG[("Postgres DATABASE_URL, app does not migrate")]
   MIG["1. pnpm db:migrate (DATABASE_URL_UNPOOLED)"] --> BOOT["2. pnpm office:bootstrap (NODAL_OWNER_*, empty membership; seeds the workspace)"]
-  BOOT --> PG
+  BOOT --> BUILD["3. pnpm build (next build), then 4. pnpm start"]
+  BUILD --> PG
   SEED["pnpm db:seed: workspace fixture data only, not a start step"] -.-> PG
   PGL -.-> DB["active store: office + workspace tables"]
   PG -.-> DB
   U["browser /office"] -->|"POST login"| LOGIN["check username + password"]
   LOGIN --> SESS["session cookie (expires 8 h, logout deletes it)"]
   U -->|"POST register"| AUTH{"browser first-owner bootstrap? NODAL_LOCAL_PILOT=1 + NODAL_BOOTSTRAP_ALLOWED=1 + loopback origin/host + no members"}
+  LANORD["PGlite pilot order: create the owner on loopback (office:dev) first, then office:lan; the LAN launcher disables first-owner bootstrap"] -.-> AUTH
   AUTH -->|"yes"| OWNER["owner account"]
   AUTH -->|"no: needs invitation (24 h, one use)"| MEMBER["member account"]
   OWNER -->|"POST invite"| CODE["invitation code (24 h, one use)"]
