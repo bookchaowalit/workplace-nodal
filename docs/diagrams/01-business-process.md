@@ -104,6 +104,7 @@ Sources: `PRODUCT-PLAN.md` (§Roadmap table V1–V4, §Production tech stack, §
 | G13 | As-Is ไม่ได้บอกว่า `office:media:lan` ต้องตั้ง `NODAL_MEDIA_HOST` เป็น LAN IP ของเครื่อง host ไม่งั้น launcher หยุดก่อนเปิด Next.js (Codex review รอบ 4, P3, 2026-11-28) → ระบุตัวแปรนี้เมื่อแก้ diagram ครั้งถัดไป | todo | claude | `scripts/office-dev.ts` `NODAL_MEDIA_HOST`; `README.md` §LAN |
 | G14 | As-Is วาด `pnpm db:import-fixtures` ต่อจาก Postgres ตรง ๆ ไม่ได้บอกว่าต้องมี workspace ก่อน (`office:bootstrap` หรือ `db:seed`) ไม่งั้น import หยุดด้วย `workspace_not_initialized` (Codex review รอบ 5, P2, จดไว้แทนการวาดใหม่ 2026-11-28) → แสดงลำดับนี้เมื่อแก้ diagram ครั้งถัดไป | todo | claude | `src/persistence/repository.ts` `importSource`; `README.md` §Engineering persistence |
 | G15 | As-Is เขียนว่า PGlite "Drizzle migrate at start" แต่ migrate จริงตอนมีคำขอแรกที่เรียก `officeDatabase()` (Codex review รอบ 5, P3, 2026-11-28) → เขียนให้ตรงเมื่อแก้ diagram ครั้งถัดไป | todo | claude | `src/office/database.ts`; `src/office/http.ts` |
+| G16 | To-Be พา `approved_for_sync` ไป workflow ที่เขียนข้อมูลภายนอกโดยไม่บอกว่าเป็น V2 ส่วน V1 ต้องหยุดที่ `approved_for_sync` → แยกเส้นทาง V1/V2 (Codex review 2026-11-28, จดไว้แทนการวาดใหม่ตามที่ owner สั่ง) | todo | claude | `docs/AI-WORKFLOW.md:82-87`; G4 |
 
 ## Open questions
 

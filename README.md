@@ -48,6 +48,10 @@ calls show an explicit unconfigured state. Stop with Ctrl+C.
 
 ## Share on the same LAN
 
+Owner decision 2026-11-28: until the gaps named under Internet/team deployment
+are closed, use the LAN mode only to rehearse with synthetic data, not with real
+team data.
+
 After creating the first owner on loopback, a nearby teammate can join from a
 second device without exposing the app to the internet. Run the office server
 with an explicit LAN bind:
