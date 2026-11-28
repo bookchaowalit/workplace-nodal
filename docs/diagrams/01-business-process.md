@@ -90,7 +90,7 @@ Sources: `PRODUCT-PLAN.md` (§Roadmap table V1–V4, §Production tech stack, §
 | ID | As-Is → To-Be | Status | Owner | Evidence |
 |---|---|---|---|---|
 | G1 | มีขั้นตอน self-hosted / internet pilot แล้ว (`pnpm db:migrate`, `office:bootstrap`, `pnpm start`) แต่ยังไม่มี deployment จริงและ URL สำหรับทีม → hosted HTTPS + Postgres + LiveKit WSS/TURN ที่ทีมเข้าได้ | decide | owner | `PRODUCT.md` §Operations today; `README.md` §Internet/team deployment "not deployed by this change" |
-| G2 | GitHub / Linear adapters รับ fixture JSON เท่านั้น → live read-only ingestion (V1 pilot) | todo | claude | `src/adapters/sources.ts`; `PRODUCT-PLAN.md` §Roadmap V1 |
+| G2 | GitHub / Linear adapters รับ fixture JSON เท่านั้น → live read-only ingestion (V1 pilot); เปิดได้หลัง G3 (immutable archive) และ authentication/membership พร้อมเท่านั้น | todo | claude | `src/adapters/sources.ts`; `PRODUCT-PLAN.md` §Roadmap V1, บรรทัด 66–70 |
 | G3 | ไม่มี raw source archive → archive ใน R2 แบบ immutable ก่อนเป็น projection | todo | claude | `README.md` §Remaining gaps; `PRODUCT-PLAN.md` §Safety / rollout |
 | G4 | หยุดที่ `approved_for_sync`, `synced` ทำไม่ได้ → durable workflow ทำ write ที่ policy อนุญาตพร้อม idempotency key (V2) | todo | claude | `src/domain/commands.ts` `canTransition`; `PRODUCT-PLAN.md` §Roadmap V2 |
 | G5 | verification ยัง pending → verification evidence จริงที่ link กลับ source (รับได้ตั้งแต่ pilot ที่ external writes ยังปิด) | todo | claude | `README.md` §Engineering persistence; `PRODUCT.md` §Job to be done; `docs/AI-WORKFLOW.md` §Before a real team pilot |
@@ -100,6 +100,8 @@ Sources: `PRODUCT-PLAN.md` (§Roadmap table V1–V4, §Production tech stack, §
 | G9 | ยังไม่ได้วัด V1 success metrics (8/10 decisions ใน 3 นาที ฯลฯ) → pilot กับ 1 ทีม | todo | owner | `PRODUCT.md` §V1 success metrics; `PRODUCT-PLAN.md` §Roadmap V1 |
 | G10 | `PRODUCT.md` บอกว่า "general-purpose virtual office" อยู่นอก scope V1 แต่โค้ดสร้าง Shared Office แล้ว → owner ยืนยัน scope และแก้ `PRODUCT.md` | decide | owner | `PRODUCT.md` §Out of scope for V1; `PRODUCT-PLAN.md` §Shared Office |
 | G11 | diagram รวมทางที่ไม่มี session เป็นเส้นเดียว ไม่แยกว่าหน้าเว็บพาไปหน้า login แต่ API ตอบ HTTP 401 (Codex review รอบ 3, P3, owner ให้จดไว้แทนการวาดใหม่ 2026-11-28) → แยกสองทางนี้เมื่อแก้ diagram ครั้งถัดไป | todo | claude | Codex Stop-hook review 2026-11-28; `src/office/service.ts` `session` |
+| G12 | As-Is ไม่ได้บอกว่าโหมด Postgres (ไม่มี `NODAL_LOCAL_PILOT=1`) ตั้ง session cookie เป็น `Secure` ทีมที่เปิด `http://<LAN-IP>:3400` จึงล็อกอินไม่ติด (Codex review รอบ 4, P2, จดไว้แทนการวาดใหม่ 2026-11-28) → แสดง HTTPS เป็นเงื่อนไขของการเข้าจากเครื่องอื่นเมื่อแก้ diagram ครั้งถัดไป | todo | claude | `app/api/office/[action]/route.ts` cookie `secure`; `README.md` §Internet/team deployment |
+| G13 | As-Is ไม่ได้บอกว่า `office:media:lan` ต้องตั้ง `NODAL_MEDIA_HOST` เป็น LAN IP ของเครื่อง host ไม่งั้น launcher หยุดก่อนเปิด Next.js (Codex review รอบ 4, P3, 2026-11-28) → ระบุตัวแปรนี้เมื่อแก้ diagram ครั้งถัดไป | todo | claude | `scripts/office-dev.ts` `NODAL_MEDIA_HOST`; `README.md` §LAN |
 
 ## Open questions
 
