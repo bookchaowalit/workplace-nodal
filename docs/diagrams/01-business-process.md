@@ -99,6 +99,7 @@ Sources: `PRODUCT-PLAN.md` (§Roadmap table V1–V4, §Production tech stack, §
 | G8 | rate limit ใน process, PGlite process เดียว; session (8 ชม., ลบเมื่อ logout) และคำเชิญ (24 ชม., ใช้ครั้งเดียว) มีพื้นฐานแล้วแต่ไม่มีการจัดการระดับ production (ยกเลิกคำเชิญ, revoke session, ลบสมาชิก, password recovery), retention, backup/restore → shared abuse controls และ production controls | todo | claude | `README.md` §Remaining gaps "Production needs ..."; `src/office/service.ts` `session` / `invite` |
 | G9 | ยังไม่ได้วัด V1 success metrics (8/10 decisions ใน 3 นาที ฯลฯ) → pilot กับ 1 ทีม | todo | owner | `PRODUCT.md` §V1 success metrics; `PRODUCT-PLAN.md` §Roadmap V1 |
 | G10 | `PRODUCT.md` บอกว่า "general-purpose virtual office" อยู่นอก scope V1 แต่โค้ดสร้าง Shared Office แล้ว → owner ยืนยัน scope และแก้ `PRODUCT.md` | decide | owner | `PRODUCT.md` §Out of scope for V1; `PRODUCT-PLAN.md` §Shared Office |
+| G11 | diagram รวมทางที่ไม่มี session เป็นเส้นเดียว ไม่แยกว่าหน้าเว็บพาไปหน้า login แต่ API ตอบ HTTP 401 (Codex review รอบ 3, P3, owner ให้จดไว้แทนการวาดใหม่ 2026-11-28) → แยกสองทางนี้เมื่อแก้ diagram ครั้งถัดไป | todo | claude | Codex Stop-hook review 2026-11-28; `src/office/service.ts` `session` |
 
 ## Open questions
 
