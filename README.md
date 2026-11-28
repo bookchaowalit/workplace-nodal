@@ -108,6 +108,11 @@ workspace/approval APIs require a valid session.
 The local launcher is intentionally bound to this machine; an incognito window
 is a second local participant, not proof that remote teammates can connect.
 
+Owner decision 2026-11-28: do not open this to a real team yet. Wait until the
+immutable source archive and production authentication/membership are in place
+(gaps G1, G3, G7, G8 in `docs/diagrams/01-business-process.md`); until then
+rehearse with synthetic data only.
+
 For an internet pilot, deploy Next.js behind HTTPS, configure a dedicated
 Postgres database and a reachable LiveKit WSS/WebRTC service, then supply private
 environment values:
