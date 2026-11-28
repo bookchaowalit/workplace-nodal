@@ -102,6 +102,8 @@ Sources: `PRODUCT-PLAN.md` (§Roadmap table V1–V4, §Production tech stack, §
 | G11 | diagram รวมทางที่ไม่มี session เป็นเส้นเดียว ไม่แยกว่าหน้าเว็บพาไปหน้า login แต่ API ตอบ HTTP 401 (Codex review รอบ 3, P3, owner ให้จดไว้แทนการวาดใหม่ 2026-11-28) → แยกสองทางนี้เมื่อแก้ diagram ครั้งถัดไป | todo | claude | Codex Stop-hook review 2026-11-28; `src/office/service.ts` `session` |
 | G12 | As-Is ไม่ได้บอกว่าโหมด Postgres (ไม่มี `NODAL_LOCAL_PILOT=1`) ตั้ง session cookie เป็น `Secure` ทีมที่เปิด `http://<LAN-IP>:3400` จึงล็อกอินไม่ติด (Codex review รอบ 4, P2, จดไว้แทนการวาดใหม่ 2026-11-28) → แสดง HTTPS เป็นเงื่อนไขของการเข้าจากเครื่องอื่นเมื่อแก้ diagram ครั้งถัดไป | todo | claude | `app/api/office/[action]/route.ts` cookie `secure`; `README.md` §Internet/team deployment |
 | G13 | As-Is ไม่ได้บอกว่า `office:media:lan` ต้องตั้ง `NODAL_MEDIA_HOST` เป็น LAN IP ของเครื่อง host ไม่งั้น launcher หยุดก่อนเปิด Next.js (Codex review รอบ 4, P3, 2026-11-28) → ระบุตัวแปรนี้เมื่อแก้ diagram ครั้งถัดไป | todo | claude | `scripts/office-dev.ts` `NODAL_MEDIA_HOST`; `README.md` §LAN |
+| G14 | As-Is วาด `pnpm db:import-fixtures` ต่อจาก Postgres ตรง ๆ ไม่ได้บอกว่าต้องมี workspace ก่อน (`office:bootstrap` หรือ `db:seed`) ไม่งั้น import หยุดด้วย `workspace_not_initialized` (Codex review รอบ 5, P2, จดไว้แทนการวาดใหม่ 2026-11-28) → แสดงลำดับนี้เมื่อแก้ diagram ครั้งถัดไป | todo | claude | `src/persistence/repository.ts` `importSource`; `README.md` §Engineering persistence |
+| G15 | As-Is เขียนว่า PGlite "Drizzle migrate at start" แต่ migrate จริงตอนมีคำขอแรกที่เรียก `officeDatabase()` (Codex review รอบ 5, P3, 2026-11-28) → เขียนให้ตรงเมื่อแก้ diagram ครั้งถัดไป | todo | claude | `src/office/database.ts`; `src/office/http.ts` |
 
 ## Open questions
 
