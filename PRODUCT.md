@@ -50,7 +50,8 @@ workflows. This local fixture does not prove that promise.
 
 ## Out of scope for V1
 
-- general-purpose virtual office;
+- a general-purpose virtual office beyond the Shared Office (owner decision 2026-11-28: the
+  Shared Office already in the code is in V1 scope);
 - autonomous merge, deploy, or incident remediation;
 - AR/VR, robotics, and mobile-native clients;
 - a new calendar, chat, or project-management system;
